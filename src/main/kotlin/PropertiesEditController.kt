@@ -4,7 +4,7 @@ import javafx.scene.Node
 import tiOPF.Mapper.Project
 import tiOPF.ObjectList
 
-class PropertiesEditController(val properties: ObjectList<Project.Unit.ClassItem.Prop>, resource: String): BasePaneController(properties, resource) {
+class PropertiesEditController(private val properties: ObjectList<Project.Unit.ClassItem.Prop>, resource: String): BasePaneController(properties, resource) {
     @FXML
     lateinit var propertiesTable: CustomFXTableView
     override fun finishLoad(project: Project): Node {

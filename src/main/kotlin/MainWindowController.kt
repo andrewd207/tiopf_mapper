@@ -102,9 +102,13 @@ class MainWindowController(private val primaryStage: Stage) {
         if (field != value && field != null)
             field!!.stopMediators()
         if (value != null) {
-            editPane.content = value.finishLoad(project!!)
+            val child = value.finishLoad(project!!) as Pane
+            editPane.content = child
+            child.prefWidthProperty().bind(editPane.widthProperty())
+            child.prefHeightProperty().bind(editPane.heightProperty())
         }
         field = value
+
     }
     private val baseTitle = "tiOPF Mapper Schema Editor"
     fun loadFile(file: File){

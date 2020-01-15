@@ -6,7 +6,7 @@ import javafx.scene.control.ComboBox
 import javafx.scene.control.TextField
 import tiOPF.Mapper.Project
 
-class MappingPaneController(val classItem: Project.Unit.ClassItem, resource: String): BasePaneController(classItem.mapping, resource) {
+class MappingPaneController(private val classItem: Project.Unit.ClassItem, resource: String): BasePaneController(classItem.mapping, resource) {
     @FXML
     lateinit var tableEdit: TextField
     @FXML
