@@ -19,13 +19,12 @@ import tiOPF.ObjectList
 import tiOPF.getObjectProperty
 import java.io.ByteArrayOutputStream
 import java.io.File
-import kotlin.reflect.KFunction
 
-typealias ProjectUnitEnum = Project.Unit.Enum
-typealias ProjectUnitClassItem = Project.Unit.ClassItem
+typealias ProjectUnitEnum = Unit.Enum
+typealias ProjectUnitClassItem = Unit.ClassItem
 
-private fun addChildnodeMediator(parent: TreeItem<MediatedItem>?, itemPropName: String, thisNodeName: String, subject: Object, obj: MainWindowController.NonItemObject? = null, activateMediator: Boolean = true): TreeItem<MediatedItem>{
-    var newItem: TreeItem<MediatedItem> = TreeItem(MediatedItem())
+private fun addChildNodeMediator(parent: TreeItem<MediatedItem>?, itemPropName: String, thisNodeName: String, subject: Object, obj: MainWindowController.NonItemObject? = null, activateMediator: Boolean = true): TreeItem<MediatedItem>{
+    val newItem: TreeItem<MediatedItem> = TreeItem(MediatedItem())
     newItem.value.text = thisNodeName
     val mediator = TreeViewNodeMediatorView(newItem, subject, obj)
     mediator.fieldsInfo!!.addFieldInfo(itemPropName, thisNodeName, -1)
@@ -69,8 +68,8 @@ fun <T: Object>ObjectList<T>.addUniqueItem(nameBase: String, propName: String, c
 
 }
 
-class MainWindowController(val primaryStage: Stage) {
-    public var project: Project? = null
+class MainWindowController(private val primaryStage: Stage) {
+    var project: Project? = null
     @FXML
     private lateinit var menuFileOpen: MenuItem
     @FXML
@@ -107,7 +106,7 @@ class MainWindowController(val primaryStage: Stage) {
         }
         field = value
     }
-    private val baseTitle = "tiopf Mapper Schema Editor"
+    private val baseTitle = "tiOPF Mapper Schema Editor"
     fun loadFile(file: File){
 
         project = Project()
@@ -116,7 +115,7 @@ class MainWindowController(val primaryStage: Stage) {
 
         unitsTreeView.isEditable = true
 
-        unitsTreeView.root = addChildnodeMediator(null, "name", "Project/Units", project!!.projectUnits, ProjectObject(project!!))
+        unitsTreeView.root = addChildNodeMediator(null, "name", "Project/Units", project!!.projectUnits, ProjectObject(project!!))
         unitsTreeView.root.isExpanded = true
         unitsTreeView.selectionModel.select(unitsTreeView.root)
     }
@@ -128,7 +127,7 @@ class MainWindowController(val primaryStage: Stage) {
         }
     }
 
-    private class PropertyObject(val classProps: ObjectList<Project.Unit.ClassItem.Prop>): NonItemObject(){
+    private class PropertyObject(val classProps: ObjectList<Prop>): NonItemObject(){
         override fun listen(treeItem: TreeItem<MediatedItem>) {
             // do nothing, there are no subnodes
         }
@@ -145,14 +144,14 @@ class MainWindowController(val primaryStage: Stage) {
         }
     }
 
-    private class MappingObject(val classItem: Project.Unit.ClassItem): NonItemObject(){
+    private class MappingObject(val classItem: Unit.ClassItem): NonItemObject(){
         override fun listen(treeItem: TreeItem<MediatedItem>) {
            // do nothing
         }
 
     }
 
-    private class EnumsObject(val unit: Project.Unit): NonItemObject() {
+    private class EnumsObject(val unit: Unit): NonItemObject() {
         override fun listen(treeItem: TreeItem<MediatedItem>) {
             // do nothing
         }
@@ -169,19 +168,18 @@ class MainWindowController(val primaryStage: Stage) {
 
     }
 
-    private class ClassesObject(val unit: Project.Unit): NonItemObject() {
+    private class ClassesObject(val unit: Unit): NonItemObject() {
         override fun listen(treeItem: TreeItem<MediatedItem>) {
             treeItem.children.addListener(ListChangeListener {
                 while (it.next()) {
                     if (it.wasAdded() && !it.wasReplaced()) {
                         it.addedSubList.forEach { item ->
-                            val model = item.value.itemMediator.model
-                            when (model) {
-                                is Project.Unit.ClassItem -> {
-                                    addChildnodeMediator(item, "name", "Properties", model.classProps, PropertyObject(model.classProps), false)
-                                    addChildnodeMediator(item, "prop", "Mappings", model.mapping.mappings, MappingObject(model), false)
-                                    addChildnodeMediator(item, "name", "Selections", model.selections)
-                                    addChildnodeMediator(item, "prop", "Validators", model.validators)
+                            when (val model = item.value.itemMediator.model) {
+                                is Unit.ClassItem -> {
+                                    addChildNodeMediator(item, "name", "Properties", model.classProps, PropertyObject(model.classProps), false)
+                                    addChildNodeMediator(item, "prop", "Mappings", model.mapping.mappings, MappingObject(model), false)
+                                    addChildNodeMediator(item, "name", "Selections", model.selections)
+                                    addChildNodeMediator(item, "prop", "Validators", model.validators)
                                 }
                             }
 
@@ -211,12 +209,11 @@ class MainWindowController(val primaryStage: Stage) {
                 while (c.next()) {
                     if (c.wasAdded() && !c.wasReplaced()) {
                         c.addedSubList.forEach { item ->
-                            val model = item.value.itemMediator.model
-                            when (model) {
-                                is Project.Unit -> {
-                                    addChildnodeMediator(item, "baseClass", "Classes", model.classes, ClassesObject(model)).isExpanded = true
-                                    addChildnodeMediator(item, "name", "Enums", model.enums, EnumsObject(model), true).isExpanded = true
-                                    addChildnodeMediator(item, "name", "References", model.references)
+                            when (val model = item.value.itemMediator.model) {
+                                is Unit -> {
+                                    addChildNodeMediator(item, "baseClass", "Classes", model.classes, ClassesObject(model)).isExpanded = true
+                                    addChildNodeMediator(item, "name", "Enums", model.enums, EnumsObject(model), true).isExpanded = true
+                                    addChildNodeMediator(item, "name", "References", model.references)
 
                                     item.isExpanded = true
                                 }
@@ -268,23 +265,23 @@ class MainWindowController(val primaryStage: Stage) {
                             println("selected ${selected?.toString()}")
                             if (selected != null) {
                                 when (selected) {
-                                    is Project.Unit -> {
+                                    is Unit -> {
                                         println("selected unit ${selected.name}")
                                         activePane = UnitPaneController(selected, "unit_fragment.fxml")
-                                        addContextItem("Delete Unit \"${selected.name}\"", EventHandler{ action ->
+                                        addContextItem("Delete Unit \"${selected.name}\"", EventHandler{
                                             if (selected.owner is ObjectList<*>)
-                                                (selected.owner!! as ObjectList<Project.Unit>).remove(selected)
+                                                (selected.owner!! as ObjectList<*>).remove(selected)
 
                                         })
                                     }
 
 
-                                    is Project.Unit.ClassItem -> {
+                                    is Unit.ClassItem -> {
                                         println("selected class Item ${selected.baseClass}")
                                         activePane = ClassPaneController(selected, "class_fragment.fxml")
-                                        addContextItem("Delete Class \"${selected.baseClass}\"", EventHandler{ action ->
+                                        addContextItem("Delete Class \"${selected.baseClass}\"", EventHandler{
                                             if (selected.owner is ObjectList<*>)
-                                                (selected.owner!! as ObjectList<Project.Unit.ClassItem>).remove(selected)
+                                                (selected.owner!! as ObjectList<*>).remove(selected)
 
                                         })
 
@@ -301,29 +298,29 @@ class MainWindowController(val primaryStage: Stage) {
                                         activePane = MappingPaneController(selected.classItem, "mapping_fragment.fxml")
                                     }
 
-                                    is Project.Unit.ClassItem.Mapping.PropMap -> {
+                                    is Unit.ClassItem.Mapping.PropMap -> {
                                         activePane = MappingItemPaneController(selected, "mapping_item_fragment.fxml")
                                     }
 
-                                    is Project.Unit.Enum -> {
+                                    is Unit.Enum -> {
                                         activePane = EnumsPaneController(selected, "enums_fragment.fxml")
-                                        addContextItem("Add enum value", EventHandler{ action ->
-                                            val enum = Project.Unit.Enum.EnumItem()
+                                        addContextItem("Add enum value", EventHandler{
+                                            val enum = Unit.Enum.EnumItem()
                                             enum.name = "_new_value"
                                             selected.values.add(enum)
                                         })
-                                        addContextItem("Delete enum \"${selected.name}\"", EventHandler{ action ->
+                                        addContextItem("Delete enum \"${selected.name}\"", EventHandler{
                                             if (selected.owner is ObjectList<*>)
-                                                (selected.owner!! as ObjectList<Project.Unit.Enum>).remove(selected)
+                                                (selected.owner!! as ObjectList<*>).remove(selected)
 
                                         })
                                     }
 
-                                    is Project.Unit.ClassItem.SelectionFunction -> {
+                                    is Unit.ClassItem.SelectionFunction -> {
                                         activePane = SelectionFunctionPaneController(selected, "selection_function_fragment.fxml")
-                                        addContextItem("Delete function \"${selected.name}\"", EventHandler{ action ->
+                                        addContextItem("Delete function \"${selected.name}\"", EventHandler{
                                             if (selected.owner is ObjectList<*>)
-                                                (selected.owner!! as ObjectList<Project.Unit.ClassItem.SelectionFunction>).remove(selected)
+                                                (selected.owner!! as ObjectList<*>).remove(selected)
 
                                         })
                                     }

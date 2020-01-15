@@ -8,8 +8,8 @@ import tiOPF.Mediator.ObjectUpdateMoment
 import tiOPF.Object
 import tiOPF.ObjectList
 
-abstract class BasePaneController(val subject: tiOPF.Object, private val resource: String) {
-    val mediators = mutableListOf<MediatorView<*>>()
+abstract class BasePaneController(val subject: Object, private val resource: String) {
+    protected val mediators = mutableListOf<MediatorView<*>>()
     open fun finishLoad(project: Project): Node {
         val loader = FXMLLoader(this::class.java.classLoader.getResource(resource))
         loader.setController(this)
