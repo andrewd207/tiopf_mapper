@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" spacing="5.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
+    <padding>
+        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+    </padding>
+   <children>
+         <Label minWidth="150.0" text="Function Name" />
+         <TextField fx:id="nameEdit" />
+      <Label text="Params" />
+      <TableView fx:id="paramsTable" editable="true" tableMenuButtonVisible="true">
+        <columns>
+          <TableColumn prefWidth="75.0" text="C1" />
+          <TableColumn prefWidth="75.0" text="C2" />
+        </columns>
+      </TableView>
+      <Label text="SQL template" />
+      <TextArea fx:id="sqlTextArea" prefHeight="160.0" prefWidth="549.0" />
+   </children>
+</VBox>

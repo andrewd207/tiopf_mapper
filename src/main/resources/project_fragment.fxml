@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="390.0" spacing="5.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <HBox prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <Label minWidth="160.0" text="Project Name" />
+            <TextField fx:id="projectNameEdit" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+      <HBox prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <Label minWidth="160.0" text="Output Path" />
+            <TextField fx:id="outputPathEdit" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+      <HBox prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <Label minWidth="160.0" text="Enum type" />
+            <ComboBox fx:id="enumTypeCombo" maxWidth="9999999.0" prefHeight="26.0" prefWidth="303.0" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+      <HBox prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <Label minWidth="160.0" text="Includes" />
+            <ListView fx:id="includesList" prefHeight="200.0" prefWidth="200.0" />
+         </children>
+      </HBox>
+      <HBox prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <Label minWidth="160.0" text="Tab Spaces" />
+            <Spinner fx:id="tabSpacesSpinner" maxWidth="9999999.0" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+      <HBox prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <Label minWidth="160.0" text="Visibility Tabs" />
+            <Spinner fx:id="visibilityTabsSpinner" maxWidth="9999999.0" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+      <HBox prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <Label minWidth="160.0" text="Begin-End Tab Spacing" />
+            <Spinner fx:id="beginEndTabsSpinner" maxWidth="9999999.0" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+   </children>
+   <padding>
+      <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+   </padding>
+</VBox>
