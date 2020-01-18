@@ -90,10 +90,7 @@ abstract class BasePaneController(val subject: Object, private val resource: Str
 
     fun addMediator(spinner: Spinner<Int>, fieldName: String){
         val mediator = SpinnerMediatorViewInt()
-        mediator.view = spinner
-        mediator.fieldName = fieldName
-        mediator.subject = subject
-        mediator.objectUpdateMoment = ObjectUpdateMoment.OnExit
+        mediator.setup(spinner, subject, fieldName)
         mediators.add(mediator)
     }
 

@@ -11,14 +11,30 @@
    <children>
          <Label minWidth="150.0" text="Function Name" />
          <TextField fx:id="nameEdit" />
-      <Label text="Params" />
-      <TableView fx:id="paramsTable" editable="true" tableMenuButtonVisible="true">
-        <columns>
-          <TableColumn prefWidth="75.0" text="C1" />
-          <TableColumn prefWidth="75.0" text="C2" />
-        </columns>
-      </TableView>
-      <Label text="SQL template" />
-      <TextArea fx:id="sqlTextArea" prefHeight="160.0" prefWidth="549.0" />
+      <SplitPane dividerPositions="0.5" orientation="VERTICAL">
+         <items>
+            <VBox>
+               <children>
+                  <Label text="Params" />
+                  <TableView fx:id="paramsTable" editable="true" tableMenuButtonVisible="true">
+                    <columns>
+                      <TableColumn prefWidth="75.0" text="C1" />
+                      <TableColumn prefWidth="75.0" text="C2" />
+                    </columns>
+                  </TableView>
+               </children>
+            </VBox>
+            <AnchorPane>
+               <children>
+                  <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                        <Label text="SQL template" />
+                        <TextArea fx:id="sqlTextArea" VBox.vgrow="ALWAYS" />
+                     </children>
+                  </VBox>
+               </children>
+            </AnchorPane>
+         </items>
+      </SplitPane>
    </children>
 </VBox>

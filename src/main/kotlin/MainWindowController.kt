@@ -44,8 +44,6 @@ var Pane.content: Node? get() { return this.children.first() } set(value) {
         children.add(value)
     else
         children[0] = value
-
-
 }
 
 fun <T: Object>ObjectList<T>.addUniqueItem(nameBase: String, propName: String, constructor: () -> T): T{
@@ -167,9 +165,7 @@ class MainWindowController(private val primaryStage: Stage) {
                 enum.set = "true"
             }
             menu.items.add(addEnum)
-
         }
-
     }
 
     private class ClassesObject(val unit: Unit): NonItemObject() {
