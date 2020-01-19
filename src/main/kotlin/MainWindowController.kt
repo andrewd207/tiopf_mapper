@@ -154,6 +154,12 @@ class MainWindowController(private val primaryStage: Stage) {
 
     }
 
+    private class ValidatorObject(val classItem: Unit.ClassItem): NonItemObject(){
+        override fun listen(treeItem: TreeItem<MediatedItem>) {
+            // nothing to do
+        }
+    }
+
     private class SelectionObject(val classItem: Unit.ClassItem): NonItemObject(){
         override fun listen(treeItem: TreeItem<MediatedItem>) {
             // do nothing
@@ -204,7 +210,7 @@ class MainWindowController(private val primaryStage: Stage) {
                                     addChildNodeMediator(item, "name", "Properties", model.classProps, PropertyObject(model.classProps), false)
                                     addChildNodeMediator(item, "prop", "Mappings", model.mapping.mappings, MappingObject(model), false)
                                     addChildNodeMediator(item, "name", "Selections", model.selections, SelectionObject(model))
-                                    addChildNodeMediator(item, "prop", "Validators", model.validators)
+                                    addChildNodeMediator(item, "prop", "Validators", model.validators, ValidatorObject(model), false)
                                 }
                             }
 
@@ -348,6 +354,9 @@ class MainWindowController(private val primaryStage: Stage) {
                                                 (selected.owner!! as ObjectList<*>).remove(selected)
 
                                         })
+                                    }
+                                    is ValidatorObject -> {
+                                        activePane = ValidatorsController(selected.classItem, "validators_fragment.fxml")
                                     }
 
                                     is ProjectObject -> {
