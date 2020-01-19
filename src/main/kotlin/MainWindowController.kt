@@ -22,6 +22,7 @@ import java.io.File
 
 typealias ProjectUnitEnum = Unit.Enum
 typealias ProjectUnitClassItem = Unit.ClassItem
+typealias ClassItemSelectionFunction = Unit.ClassItem.SelectionFunction
 
 private fun addChildNodeMediator(parent: TreeItem<MediatedItem>?, itemPropName: String, thisNodeName: String, subject: Object, obj: MainWindowController.NonItemObject? = null, activateMediator: Boolean = true): TreeItem<MediatedItem>{
     val newItem: TreeItem<MediatedItem> = TreeItem(MediatedItem())
@@ -153,6 +154,30 @@ class MainWindowController(private val primaryStage: Stage) {
 
     }
 
+    private class SelectionObject(val classItem: Unit.ClassItem): NonItemObject(){
+        override fun listen(treeItem: TreeItem<MediatedItem>) {
+            // do nothing
+        }
+
+        override fun updateContextMenu(menu: ContextMenu) {
+            super.updateContextMenu(menu)
+            val menuItem = MenuItem("Add Selection Function")
+            menuItem.onAction = EventHandler {
+                val item = classItem.selections.addUniqueItem("FindBy_New", "name", ::ClassItemSelectionFunction) as ClassItemSelectionFunction
+                val s = '$' // workaround for $
+                item.sql = """
+                    SELECT 
+                    $s{field_list}
+                    FROM 
+                    *your table name*
+                    WHERE 
+                    *condition* 
+                """.trimIndent()
+            }
+            menu.items.add(menuItem)
+        }
+    }
+
     private class EnumsObject(val unit: Unit): NonItemObject() {
         override fun listen(treeItem: TreeItem<MediatedItem>) {
             // do nothing
@@ -178,7 +203,7 @@ class MainWindowController(private val primaryStage: Stage) {
                                 is Unit.ClassItem -> {
                                     addChildNodeMediator(item, "name", "Properties", model.classProps, PropertyObject(model.classProps), false)
                                     addChildNodeMediator(item, "prop", "Mappings", model.mapping.mappings, MappingObject(model), false)
-                                    addChildNodeMediator(item, "name", "Selections", model.selections)
+                                    addChildNodeMediator(item, "name", "Selections", model.selections, SelectionObject(model))
                                     addChildNodeMediator(item, "prop", "Validators", model.validators)
                                 }
                             }

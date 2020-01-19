@@ -1,10 +1,10 @@
 import javaFXMediators.CustomFXTableView
+import javafx.event.EventHandler
 import javafx.fxml.FXML
 import javafx.scene.Node
-import javafx.scene.control.ChoiceBox
-import javafx.scene.control.ComboBox
-import javafx.scene.control.TextField
+import javafx.scene.control.*
 import tiOPF.Mapper.Project
+import tiOPF.Mapper.Project.Unit.ClassItem.Mapping.PropMap
 
 class MappingPaneController(private val classItem: Project.Unit.ClassItem, resource: String): BasePaneController(classItem.mapping, resource) {
     @FXML
@@ -28,11 +28,6 @@ class MappingPaneController(private val classItem: Project.Unit.ClassItem, resou
         addMediator(pkChoiceBox, "pk")
         addMediator(pkFieldEdit, "pkField")
 
-
-
-
-
-
         mappingsTableView.isEditable = true
 
         oidTypeComboBox.items.addAll("String", "Int")
@@ -43,6 +38,55 @@ class MappingPaneController(private val classItem: Project.Unit.ClassItem, resou
             "field(100,\"Table field\")",
             "type(100,\"Type\")"
         ))
+
+        val addItem = MenuItem("Add Mapping")
+        val delItem = MenuItem("Delete Mapping")
+        delItem.isDisable = true
+
+
+        mappingsTableView.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
+            delItem.isDisable = newValue == null
+            if (newValue != null) {
+                val name = newValue.text
+                delItem.text = "Delete Mapping \"$name\""
+            } else
+                delItem.text = "Delete Mapping"
+        }
+
+        mappingsTableView.contextMenu = ContextMenu(addItem, delItem)
+        mappingsTableView.contextMenu.onAction = EventHandler { event ->
+            when (event.target) {
+                addItem -> {
+                    var newName = "Prop_New"
+                    var newType = "String"
+                    var brk = false
+                    classItem.classProps.forEach {property ->
+                        if (brk)
+                          return@forEach
+                        if (classItem.mapping.mappings.find { propMap -> propMap.prop == property.name} == null) {
+                            newName = property.name
+                            newType = property.type
+                            brk = true
+                            return@forEach
+                        }
+                    }
+
+                    val prop = classItem.mapping.mappings.addUniqueItem(newName, "prop", ::PropMap)
+                    // some defaults
+                    prop.type = newType
+                    prop.field = prop.prop.toUpperCase()
+                }
+                delItem -> {
+                    val tableItem = mappingsTableView.selectionModel.selectedItem
+                    if (tableItem != null) {
+                        val item = tableItem.itemMediator.model
+                        if (item != null && item is PropMap)
+                            classItem.mapping.mappings.remove(item)
+                    }
+                }
+            }
+
+        }
 
 
         return result
