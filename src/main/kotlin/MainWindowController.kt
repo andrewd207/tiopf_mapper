@@ -171,7 +171,7 @@ class MainWindowController(private val primaryStage: Stage) {
                     FROM 
                     *your table name*
                     WHERE 
-                    *condition* 
+                    *field* = :*sql_param_name* 
                 """.trimIndent()
             }
             menu.items.add(menuItem)
