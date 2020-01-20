@@ -492,6 +492,7 @@ class MainWindowController(private val primaryStage: Stage): Object() {
     private val contextMenu = ContextMenu()
 
     fun finishLoad(){
+        updateRecent()
         unitsTreeView.isShowRoot = true
         unitsTreeView.selectionModel.selectedItems.addListener(ListChangeListener {
             unitsTreeView.requestFocus() // to allow the current pane to lose focus and cause the mediator to update

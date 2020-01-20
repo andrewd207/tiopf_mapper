@@ -29,12 +29,8 @@ class MapperApplication: Application() {
         primaryStage.scene = Scene(loader.load())
 
         mainWindowController.finishLoad()
-        mainWindowController.loadFile(File("/home/andrew/programming/GroupProjects/tiopf_apps/tiOPFMapper/demos/schema/sample.xml"))
-        val unit = Project.Unit()
-        unit.name = "woohoo"
-        //mainWindowController.project!!.projectUnits.beginUpdate()
-        //mainWindowController.project!!.projectUnits.add(unit)
-        //mainWindowController.project!!.projectUnits.endUpdate()
+        //mainWindowController.loadFile(File("/home/andrew/programming/GroupProjects/tiopf_apps/tiOPFMapper/demos/schema/sample.xml"))
+
         primaryStage.show()
 
 
