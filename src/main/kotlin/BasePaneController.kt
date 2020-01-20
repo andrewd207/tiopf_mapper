@@ -73,7 +73,7 @@ abstract class BasePaneController(val subject: Object, private val resource: Str
         mediators.add(mediator)
         subject.attachObserver(this)
     }
-    fun addMediator(listView: CustomFXListView, fieldName: String, subject: ObjectList<Project.Include>){
+    fun addMediator(listView: CustomFXListView, fieldName: String, subject: ObjectList<*>){
         val mediator = ListViewListMediatorView()
         mediator.view = listView
         mediator.fieldName = fieldName

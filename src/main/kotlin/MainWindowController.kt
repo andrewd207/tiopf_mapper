@@ -458,7 +458,7 @@ class MainWindowController(private val primaryStage: Stage): Object() {
                                 is Unit -> {
                                     addChildNodeMediator(item, "baseClass", "Classes", model.classes, ClassesObject(model)).isExpanded = true
                                     addChildNodeMediator(item, "name", "Enums", model.enums, EnumsObject(model), true).isExpanded = true
-                                    addChildNodeMediator(item, "name", "References", model.references)
+                                    //addChildNodeMediator(item, "name", "References", model.references)
 
                                     item.isExpanded = true
                                 }
@@ -534,15 +534,8 @@ class MainWindowController(private val primaryStage: Stage): Object() {
                                         activePane = PropertiesEditController(selected.classProps, "properties_fragment.fxml")
                                     }
 
-                                    /*is Project.Unit.ClassItem.Prop -> {
-                                        activePane = PropertyPaneController(selected, "property_fragment.fxml")
-                                    }*/
                                     is MappingObject -> {
                                         activePane = MappingPaneController(selected.classItem, "mapping_fragment.fxml")
-                                    }
-
-                                    is Unit.ClassItem.Mapping.PropMap -> {
-                                        activePane = MappingItemPaneController(selected, "mapping_item_fragment.fxml")
                                     }
 
                                     is Unit.Enum -> {
