@@ -494,6 +494,7 @@ class MainWindowController(private val primaryStage: Stage): Object() {
     fun finishLoad(){
         unitsTreeView.isShowRoot = true
         unitsTreeView.selectionModel.selectedItems.addListener(ListChangeListener {
+            unitsTreeView.requestFocus() // to allow the current pane to lose focus and cause the mediator to update
             while (it.next()) {
                 val list = it.addedSubList
                 if (list != null){
