@@ -9,10 +9,16 @@
         <menus>
           <Menu mnemonicParsing="false" text="File">
             <items>
+                  <MenuItem fx:id="menuFileNew" mnemonicParsing="false" onAction="#menuFileNewClick" text="New" />
                   <MenuItem fx:id="menuFileOpen" mnemonicParsing="false" onAction="#menuFileOpenClick" text="Open" />
-                  <MenuItem fx:id="menuFileSave" mnemonicParsing="false" text="Save" />
-                  <MenuItem fx:id="menuFileSaveAs" mnemonicParsing="false" text="Save as" />
-              <MenuItem fx:id="menuFileClose" mnemonicParsing="false" text="Close" />
+                  <Menu fx:id="menuRecent" disable="true" mnemonicParsing="false" text="Open recent">
+                    <items>
+                      <MenuItem mnemonicParsing="false" text="Action 1" />
+                    </items>
+                  </Menu>
+                  <MenuItem fx:id="menuFileSave" mnemonicParsing="false" onAction="#menuFileSaveClick" text="Save" />
+                  <MenuItem fx:id="menuFileSaveAs" mnemonicParsing="false" onAction="#menuFileSaveAsClick" text="Save as" />
+              <MenuItem fx:id="menuFileClose" mnemonicParsing="false" onAction="#menuFileCloseClick" text="Close" />
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem fx:id="menuFileExit" mnemonicParsing="false" onAction="#menuFileExitClick" text="Exit" />
             </items>

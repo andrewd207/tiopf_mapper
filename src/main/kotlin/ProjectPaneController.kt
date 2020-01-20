@@ -1,4 +1,5 @@
 import javaFXMediators.*
+import javafx.event.EventHandler
 import javafx.fxml.FXML
 import javafx.scene.Node
 import javafx.scene.control.*
@@ -25,6 +26,48 @@ class ProjectPaneController(project: Project, resource: String): BasePaneControl
         addMediator(tabSpacesSpinner, "tabSpaces")
         addMediator(visibilityTabsSpinner, "visibilityTabs")
         addMediator(beginEndTabsSpinner, "beginEndTabs")
+
+        val addItem = MenuItem("Add include")
+        val delItem = MenuItem("Delete include")
+        delItem.isDisable = true
+
+
+        includesList.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
+            delItem.isDisable = newValue == null
+            if (newValue != null) {
+                val name = newValue.text
+                delItem.text = "Delete include \"$name\""
+            }
+            else
+                delItem.text = "Delete include"
+        }
+
+        includesList.contextMenu = ContextMenu(addItem, delItem)
+        includesList.contextMenu.onAction = EventHandler { event ->
+            when (event.target) {
+                addItem -> {
+                    val textDialog = TextInputDialog("")
+                    textDialog.title = "Adding new include"
+                    textDialog.headerText = "Enter an include name"
+                    val result = textDialog.showAndWait()
+                    if (result.isPresent && result.get().trim() != ""){
+                        val include = Project.Include()
+                        include.fileName = result.get().trim()
+                        project.includes.add(include)
+                    }
+
+                }
+                delItem -> {
+                    val selectedItem = includesList.selectionModel.selectedItem
+                    if (selectedItem != null) {
+                        val item = selectedItem.itemMediator.model
+                        if (item != null && item is Project.Include)
+                            project.includes.remove(item)
+                    }
+                }
+            }
+
+        }
 
         return result
     }

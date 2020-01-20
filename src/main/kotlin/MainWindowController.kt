@@ -13,12 +13,15 @@ import tiOPF.Mapper.MapperXML
 import tiOPF.Mapper.Project
 import tiOPF.Mapper.Project.Unit
 import tiOPF.Mapper.Project.Unit.ClassItem.Prop
-import tiOPF.Mapper.readFromXML
+import tiOPF.Mapper.loadFromFile
 import tiOPF.Object
 import tiOPF.ObjectList
 import tiOPF.getObjectProperty
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.nio.file.Paths
 
 typealias ProjectUnitEnum = Unit.Enum
 typealias ProjectUnitClassItem = Unit.ClassItem
@@ -41,11 +44,17 @@ private fun addChildNodeMediator(parent: TreeItem<MediatedItem>?, itemPropName: 
 }
 
 var Pane.content: Node? get() { return this.children.first() } set(value) {
-    if (children.count() == 0)
-        children.add(value)
-    else
-        children[0] = value
+    if (value == null)
+        children.clear()
+    else {
+        if (children.count() == 0)
+            children.add(value)
+        else
+            children[0] = value
+    }
 }
+
+
 
 fun <T: Object>ObjectList<T>.addUniqueItem(nameBase: String, propName: String, constructor: () -> T): T{
     var newItemName: String = nameBase
@@ -67,10 +76,39 @@ fun <T: Object>ObjectList<T>.addUniqueItem(nameBase: String, propName: String, c
 
 }
 
-class MainWindowController(private val primaryStage: Stage) {
+class MainWindowController(private val primaryStage: Stage): Object() {
+    init {
+        primaryStage.onCloseRequest = EventHandler {
+            if (modified && !trySave())
+                it.consume()
+        }
+    }
     var project: Project? = null
+    var projectFile: File? = null
+    var modified = false
+        get() {
+            if (activePane != null)
+                return activePane!!.modified || field
+            return field
+        }
+        set(value) {
+            field = value
+            if (activePane != null && !value)
+                activePane!!.modified = value
+            updateState()
+        }
+    @FXML
+    private lateinit var menuFileNew: MenuItem
     @FXML
     private lateinit var menuFileOpen: MenuItem
+    @FXML
+    private lateinit var menuRecent: Menu
+    @FXML
+    private lateinit var menuFileSave: MenuItem
+    @FXML
+    private lateinit var menuFileSaveAs: MenuItem
+    @FXML
+    private lateinit var menuFileClose: MenuItem
     @FXML
     private lateinit var menuFileExit: MenuItem
     @FXML
@@ -84,36 +122,196 @@ class MainWindowController(private val primaryStage: Stage) {
         dialog.title = "Open schema files"
         dialog.extensionFilters.add(FileChooser.ExtensionFilter("schema files", mutableListOf("*.xml")))
         dialog.extensionFilters.add(FileChooser.ExtensionFilter("all files", mutableListOf("*")))
-        val file = dialog.showOpenDialog(primaryStage)
-        if (file != null)
-            loadFile(file)
+        dialog.initialDirectory = File(lastFolder)
+        projectFile = dialog.showOpenDialog(primaryStage)
+        if (projectFile != null)
+            loadFile(projectFile!!)
+
+        updateState()
     }
+    fun updateRecent(){
+        if (projectFile != null)
+        Preferences.addRecent(projectFile!!.absolutePath)
+
+        menuRecent.items.clear()
+        Preferences.recentFiles.forEach {fileName ->
+            val file = File(fileName)
+            val p = Project()
+            p.loadFromFile(file)
+            val item = MenuItem("${p.projectName} -> ${file}")
+            item.onAction = EventHandler{
+                if (!modified || (modified && trySave())){
+                    loadFile(File(fileName))
+                }
+            }
+            item.isDisable = (projectFile != null && projectFile!!.absolutePath == fileName)
+            menuRecent.items.add(item)
+        }
+
+        menuRecent.isDisable = menuRecent.items.count() == 0
+
+    }
+
     @ExperimentalStdlibApi
     @FXML
     private fun menuFileExitClick(e: Event){
-        val byteArray = ByteArrayOutputStream()
-        MapperXML(project!!).write(byteArray)
-        println(byteArray.toByteArray().decodeToString())
+        if (modified && !trySave())
+            return
+
+        //val byteArray = ByteArrayOutputStream()
+        //MapperXML(project!!).write(byteArray)
+        //println(byteArray.toByteArray().decodeToString())
         primaryStage.close()
     }
 
+    @FXML
+    private fun menuFileCloseClick(e: Event){
+        checkCloseProject()
+        updateState()
+        updateRecent()
+
+    }
+
+    override fun update(subject: Object) {
+        modified = true
+    }
+
+    @FXML
+    private fun menuFileSaveClick(e: Event){
+        doSave()
+        updateState()
+    }
+
+    @FXML
+    private fun menuFileSaveAsClick(e: Event){
+        doSave(true)
+        updateState()
+    }
+
+    @FXML
+    private fun menuFileNewClick(e: Event){
+        if (checkCloseProject()) {
+            val newProject = Project()
+            newProject.projectName = "untitled"
+            loadProject(newProject)
+            modified = true
+        }
+        updateState()
+    }
+
+
+    private fun checkCloseProject(): Boolean{
+
+        if (!modified || (modified && trySave())) {
+            setProjectClosed()
+            return true
+        }
+        return false
+    }
+
+    private fun setProjectClosed(){
+        project = null
+        projectFile = null
+        modified = false
+        activePane = null
+        if (unitsTreeView.root != null) {
+            unitsTreeView.root.value.itemMediator.active = false
+            unitsTreeView.root.value.itemMediator.model = null
+            unitsTreeView.root = null
+        }
+        updateState()
+    }
+
+    private fun trySave(): Boolean {
+        if (project == null || !modified)
+            return true
+
+        var contentText = "Project '${project!!.projectName}' is modified.\nYour changes will be lost! Save?"
+
+        val alert = Alert(Alert.AlertType.WARNING, contentText, ButtonType.YES, ButtonType.NO, ButtonType.CANCEL)
+        alert.showAndWait()
+
+        when (alert.result) {
+            ButtonType.YES -> return doSave()
+            ButtonType.NO -> {}
+            else -> return false
+        }
+
+        return true
+
+    }
+
+    private fun doSave(saveAs: Boolean = false): Boolean{
+        val doSaveAs = saveAs || projectFile == null
+        var saveFile: File? = projectFile
+        if (doSaveAs){
+            val dialog = FileChooser()
+            dialog.title = "Save Schema"
+            dialog.extensionFilters.add(FileChooser.ExtensionFilter("schema files", mutableListOf("*.xml")))
+            dialog.extensionFilters.add(FileChooser.ExtensionFilter("all files", mutableListOf("*")))
+            dialog.initialDirectory = File(lastFolder)
+            if (projectFile != null) {
+                dialog.initialFileName = projectFile!!.absolutePath
+            }
+            else
+                dialog.initialFileName = "schema.xml"
+
+            saveFile = dialog.showSaveDialog(primaryStage)
+
+            if (saveFile == null)
+                return false
+
+            lastFolder = saveFile.parent
+        }
+
+        MapperXML(project!!).write(FileOutputStream(saveFile))
+        projectFile = saveFile
+        modified = false
+        updateRecent()
+        return true
+    }
+
+
+
+    private fun updateState(){
+        val noFile = project == null
+        println("menu items: $modified. No file? $noFile")
+
+        menuFileClose.isDisable = noFile
+        menuFileSave.isDisable = noFile || (!noFile && !modified)
+        menuFileSaveAs.isDisable = noFile
+        unitsTreeView.isDisable = noFile
+    }
+
     private var activePane: BasePaneController? = null ; set(value) {
-        if (field != value && field != null)
+        if (field != value && field != null) {
             field!!.stopMediators()
+            stopObserving(field!!)
+        }
         if (value != null) {
             val child = value.finishLoad(project!!) as Pane
             editPane.content = child
             child.prefWidthProperty().bind(editPane.widthProperty())
             child.prefHeightProperty().bind(editPane.heightProperty())
+            println("pane loaded: ${value.modified}")
+            value.modified = false
+            value.attachObserver(this)
         }
+        else {
+            editPane.content = null
+        }
+
+        if (field != null){
+            modified = modified || field!!.modified
+        }
+
         field = value
 
     }
     private val baseTitle = "tiOPF Mapper Schema Editor"
-    fun loadFile(file: File){
 
-        project = Project()
-        project!!.readFromXML(file)
+    fun loadProject(value: Project){
+        project = value
         primaryStage.title = baseTitle+" - ${project!!.projectName}"
 
         unitsTreeView.isEditable = true
@@ -121,6 +319,24 @@ class MainWindowController(private val primaryStage: Stage) {
         unitsTreeView.root = addChildNodeMediator(null, "name", "Project/Units", project!!.projectUnits, ProjectObject(project!!))
         unitsTreeView.root.isExpanded = true
         unitsTreeView.selectionModel.select(unitsTreeView.root)
+
+        modified = false
+
+        updateState()
+        updateRecent()
+    }
+
+    var lastFolder = Paths.get("").toAbsolutePath().toString()
+
+    fun loadFile(file: File){
+        val newProject = Project()
+        newProject.loadFromFile(file)
+        projectFile = file
+
+        loadProject(newProject)
+
+        lastFolder = file.parent
+
     }
 
     internal abstract class NonItemObject: Object() {
@@ -378,9 +594,6 @@ class MainWindowController(private val primaryStage: Stage) {
 
 
         primaryStage.title = baseTitle
-
-
-
 
 
     }

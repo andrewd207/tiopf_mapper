@@ -14,6 +14,8 @@ class ValidatorsController(private val classItem: ProjectUnitClassItem, resource
     override fun finishLoad(project: Project): Node {
         val result = super.finishLoad(project)
 
+        validatorsTable.isEditable = true
+
         addMediator(validatorsTable, classItem.validators, arrayOf(
             "prop(100,\"Property\")",
             "type(100,\"Type\")",

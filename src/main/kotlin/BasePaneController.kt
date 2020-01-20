@@ -8,7 +8,8 @@ import tiOPF.Mediator.ObjectUpdateMoment
 import tiOPF.Object
 import tiOPF.ObjectList
 
-abstract class BasePaneController(val subject: Object, private val resource: String) {
+abstract class BasePaneController(val subject: Object, private val resource: String): Object() {
+    var modified = false
     protected val mediators = mutableListOf<MediatorView<*>>()
     open fun finishLoad(project: Project): Node {
         val loader = FXMLLoader(this::class.java.classLoader.getResource(resource))
@@ -16,13 +17,29 @@ abstract class BasePaneController(val subject: Object, private val resource: Str
         return loader.load()
     }
 
+    override fun update(subject: Object) {
+        if (!modified) {
+            modified = true
+            notifyObservers()
+        }
+    }
+
+    override fun update(subject: Object, operation: NotifyOperation, data: Object?) {
+        if (!modified) {
+            modified = true
+            notifyObservers()
+        }
+    }
+
     open fun stopMediators(){
         //println("stopping mediators for $this")
         mediators.forEach {
+            if (it.subject != null)
+                stopObserving(it.subject!!)
             it.active = false
+
             it.subject = null
         }
-
         mediators.clear()
     }
 
@@ -34,6 +51,7 @@ abstract class BasePaneController(val subject: Object, private val resource: Str
         mediator.subject = subject
         mediator.objectUpdateMoment = ObjectUpdateMoment.OnExit
         mediators.add(mediator)
+        subject.attachObserver(this)
     }
 
     fun addMediator(choiceBox: ChoiceBox<String>, fieldName: String){
@@ -43,6 +61,7 @@ abstract class BasePaneController(val subject: Object, private val resource: Str
         mediator.subject = subject
         mediator.objectUpdateMoment = ObjectUpdateMoment.OnExit
         mediators.add(mediator)
+        subject.attachObserver(this)
     }
 
     fun addMediator(edit: TextArea, fieldName: String){
@@ -52,6 +71,7 @@ abstract class BasePaneController(val subject: Object, private val resource: Str
         mediator.subject = subject
         mediator.objectUpdateMoment = ObjectUpdateMoment.OnExit
         mediators.add(mediator)
+        subject.attachObserver(this)
     }
     fun addMediator(listView: CustomFXListView, fieldName: String, subject: ObjectList<Project.Include>){
         val mediator = ListViewListMediatorView()
@@ -60,6 +80,7 @@ abstract class BasePaneController(val subject: Object, private val resource: Str
         mediator.subject = subject
         mediator.objectUpdateMoment = ObjectUpdateMoment.OnExit
         mediators.add(mediator)
+        subject.attachObserver(this)
     }
 
     fun <T: Any>addMediator(comboBox: ComboBox<T>, fieldName: String){
@@ -69,9 +90,10 @@ abstract class BasePaneController(val subject: Object, private val resource: Str
         mediator.subject = subject
         mediator.objectUpdateMoment = ObjectUpdateMoment.OnExit
         mediators.add(mediator)
+        subject.attachObserver(this)
     }
 
-    fun addMediator(tableView: CustomFXTableView, subject: Object, fieldNames: Array<String>){
+    fun addMediator(tableView: CustomFXTableView, subject: ObjectList<*>, fieldNames: Array<String>){
         val mediator = TableViewListMediatorView()
         mediator.view = tableView
         var field = ""
@@ -85,6 +107,8 @@ abstract class BasePaneController(val subject: Object, private val resource: Str
         mediator.subject = subject
         //mediator.objectUpdateMoment = ObjectUpdateMoment.OnExit
         mediators.add(mediator)
+        subject.attachObserver(this)
+        println("attaching $this to $subject")
     }
 
 
@@ -92,6 +116,7 @@ abstract class BasePaneController(val subject: Object, private val resource: Str
         val mediator = SpinnerMediatorViewInt()
         mediator.setup(spinner, subject, fieldName)
         mediators.add(mediator)
+        subject.attachObserver(this)
     }
 
     fun addMediator(checkBox: CheckBox, fieldName: String){
@@ -101,5 +126,6 @@ abstract class BasePaneController(val subject: Object, private val resource: Str
         mediator.subject = subject
         mediator.objectUpdateMoment = ObjectUpdateMoment.OnExit
         mediators.add(mediator)
+        subject.attachObserver(this)
     }
 }
