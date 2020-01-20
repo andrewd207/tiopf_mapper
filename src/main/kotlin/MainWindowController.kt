@@ -275,7 +275,6 @@ class MainWindowController(private val primaryStage: Stage): Object() {
 
     private fun updateState(){
         val noFile = project == null
-        println("menu items: $modified. No file? $noFile")
 
         menuFileClose.isDisable = noFile
         menuFileSave.isDisable = noFile || (!noFile && !modified)
@@ -293,7 +292,6 @@ class MainWindowController(private val primaryStage: Stage): Object() {
             editPane.content = child
             child.prefWidthProperty().bind(editPane.widthProperty())
             child.prefHeightProperty().bind(editPane.heightProperty())
-            println("pane loaded: ${value.modified}")
             value.modified = false
             value.attachObserver(this)
         }
@@ -509,11 +507,10 @@ class MainWindowController(private val primaryStage: Stage): Object() {
                             else if (selected is Object){
                                 contextMenu.items.clear()
                             }
-                            println("selected ${selected?.toString()}")
+                            //println("selected ${selected?.toString()}")
                             if (selected != null) {
                                 when (selected) {
                                     is Unit -> {
-                                        println("selected unit ${selected.name}")
                                         activePane = UnitPaneController(selected, "unit_fragment.fxml")
                                         addContextItem("Delete Unit \"${selected.name}\"", EventHandler{
                                             if (selected.owner is ObjectList<*>)
@@ -524,7 +521,6 @@ class MainWindowController(private val primaryStage: Stage): Object() {
 
 
                                     is Unit.ClassItem -> {
-                                        println("selected class Item ${selected.baseClass}")
                                         activePane = ClassPaneController(selected, "class_fragment.fxml")
                                         addContextItem("Delete Class \"${selected.baseClass}\"", EventHandler{
                                             if (selected.owner is ObjectList<*>)
@@ -576,7 +572,6 @@ class MainWindowController(private val primaryStage: Stage): Object() {
                                     }
 
                                     is ProjectObject -> {
-                                        println("selected project ${project!!.projectName}")
                                         activePane = ProjectPaneController(project!!, "project_fragment.fxml")
                                     }
                                 }

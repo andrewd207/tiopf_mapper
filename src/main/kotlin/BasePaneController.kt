@@ -108,7 +108,6 @@ abstract class BasePaneController(val subject: Object, private val resource: Str
         //mediator.objectUpdateMoment = ObjectUpdateMoment.OnExit
         mediators.add(mediator)
         subject.attachObserver(this)
-        println("attaching $this to $subject")
     }
 
 
