@@ -13,12 +13,20 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
-    implementation(fileTree(mapOf("dir" to "jars", "include" to listOf("*.jar"))))
+
+    //implementation(fileTree(mapOf("dir" to "jars", "include" to listOf("*.jar"))))
 }
 
 tasks {
     compileKotlin {
         kotlinOptions.jvmTarget = "1.8"
+        // we don't need any database stuff and Firebird will cause a linking exception
+        exclude(
+            "*/tiOPF/Layers/*.kt",
+            "*/tiOPF/SQL*.kt",
+            "*/tiOPF/Query?.kt",
+            "*/tiOPF/Mapper/*Filter*.kt"
+        )
     }
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
